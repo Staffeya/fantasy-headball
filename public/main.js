@@ -10,45 +10,53 @@ const scoreEl = document.getElementById('score');
 const timerEl = document.getElementById('timer');
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+
 const scaleWrap = document.querySelector('.game-scale');
 const fixedLayer = document.querySelector('.game-fixed');
 
-let currentMatch = null;
-let roomId = null;
-let side = null;
-let timerId = null;
-let timeLeft = 60; // секунд на матч
+let currentMatch = null, roomId = null, side = null;
+let timerId = null, timeLeft = 60;
 
-/* ---------- масштабирование всей сцены (канва + HUD) ---------- */
 const BASE_W = 900, BASE_H = 500;
 
-function resizeGame() {
-    // сколько места доступно по высоте (минус панель управления и отступы)
-    const controls = document.querySelector('.controls');
-    const controlsHeight = controls?.offsetHeight || 0;
-
-    // немного запасов наверху/снизу
-    const topSafe = 6 + Math.max(0, (window.visualViewport?.offsetTop || 0));
-    const bottomSafe = 6 + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-bottom)')) || 0);
-
-    const availableW = Math.min(window.innerWidth - 12, 1000);
-    const availableH = window.innerHeight - controlsHeight - topSafe - bottomSafe - 12;
-
-    const scale = Math.max(0.5, Math.min(availableW / BASE_W, availableH / BASE_H));
-
-    // применяем масштаб к фиксированному слою
-    fixedLayer.style.transform = `scale(${scale})`;
-    fixedLayer.style.transformOrigin = 'top center';
-
-    // чтобы контейнер занимал правильное место по потоку
-    scaleWrap.style.height = `${BASE_H * scale}px`;
+/** Надёжное масштабирование под любое устройство (Telegram WebView учитывается) */
+function getViewportSize() {
+    // VisualViewport корректнее в моб. WebView
+    const vv = window.visualViewport;
+    return vv ? { w: vv.width, h: vv.height } : { w: window.innerWidth, h: window.innerHeight };
 }
 
-window.addEventListener('resize', resizeGame);
-window.addEventListener('orientationchange', () => { setTimeout(resizeGame, 100); });
-window.addEventListener('load', resizeGame);
+function resizeGame() {
+    const { w, h } = getViewportSize();
 
-/* ---------- ориентация ---------- */
+    // высота панели контролов
+    const controls = document.querySelector('.controls');
+    const controlsH = controls ? controls.offsetHeight : 0;
+
+    // отступы сверху/снизу и safe-area
+    const topPad = 8;
+    const bottomPad = 8 + (window.safeAreaInsetBottom || 0);
+
+    // доступная область под игру
+    const availW = Math.min(w - 12, 1000);
+    const availH = h - controlsH - topPad - bottomPad - 12;
+
+    // коэффициент вписывания (contain)
+    const scale = Math.max(0.4, Math.min(availW / BASE_W, availH / BASE_H));
+
+    // применяем: центрируем фиксированный слой и масштабируем
+    fixedLayer.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    scaleWrap.style.height = `${BASE_H * scale}px`; // чтобы место под сцену было корректное
+}
+
+window.addEventListener('resize', resizeGame, { passive: true });
+window.addEventListener('orientationchange', () => setTimeout(resizeGame, 100), { passive: true });
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', resizeGame);
+    window.visualViewport.addEventListener('scroll', resizeGame); // когда Telegram прячет/показывает бар
+}
+
+/* ---------- ориентация (просим альбомную) ---------- */
 function handleOrientation() {
     const isPortrait = window.innerHeight > window.innerWidth;
     if (isPortrait) rotateOverlay.classList.remove('hidden');
@@ -56,20 +64,14 @@ function handleOrientation() {
 }
 window.addEventListener('resize', handleOrientation);
 window.addEventListener('orientationchange', handleOrientation);
-handleOrientation();
 
-/* ---------- сценки ---------- */
+/* ---------- сцены ---------- */
 function showMenu() {
     scene.classList.add('hidden');
     menu.classList.remove('hidden');
-    if (currentMatch) {
-        currentMatch.destroy();
-        currentMatch = null;
-    }
+    if (currentMatch) { currentMatch.destroy(); currentMatch = null; }
     leaveQueue();
-    stopTimer();
-    setTimer(60);
-    updateStatus('');
+    stopTimer(); setTimer(60); updateStatus('');
 }
 
 function showMatch() {
@@ -87,24 +89,14 @@ function startLocalMatch() {
     startTimer();
 }
 
-function updateStatus(text) {
-    statusEl.textContent = text || '';
-    statusEl.style.display = text ? 'block' : 'none';
-}
-
-/* ---------- таймер ---------- */
+/* ---------- статус/таймер ---------- */
+function updateStatus(t) { statusEl.textContent = t || ''; statusEl.style.display = t ? 'block' : 'none'; }
 function setTimer(v) { timeLeft = v; timerEl.textContent = `${timeLeft}`; }
 function startTimer() {
     stopTimer();
     timerId = setInterval(() => {
         timeLeft -= 1;
-        if (timeLeft <= 0) {
-            setTimer(0);
-            stopTimer();
-            updateStatus('⏱ Время!');
-            if (currentMatch) currentMatch.setPaused(true);
-            return;
-        }
+        if (timeLeft <= 0) { setTimer(0); stopTimer(); updateStatus('⏱ Время!'); if (currentMatch) currentMatch.setPaused(true); return; }
         timerEl.textContent = `${timeLeft}`;
     }, 1000);
 }
@@ -116,30 +108,16 @@ document.addEventListener('click', (e) => {
     if (!btn) return;
     const action = btn.dataset.action;
     if (action === 'play') showMatch();
-    if (action === 'invite') {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url);
-        alert('Ссылка скопирована! Отправьте другу.');
-    }
-    if (action === 'wardrobe' || action === 'shop') {
-        alert('Раздел в разработке ✨');
-    }
+    if (action === 'invite') { navigator.clipboard.writeText(window.location.href); alert('Ссылка скопирована!'); }
+    if (action === 'wardrobe' || action === 'shop') alert('Раздел в разработке ✨');
 });
-
-backBtn.addEventListener('click', showMenu);
+document.getElementById('backToMenu').addEventListener('click', showMenu);
 
 /* ---------- сокеты ---------- */
-onMatchFound((data) => {
-    roomId = data.roomId;
-    side = data.side;
-    updateStatus('Матч найден!');
-    setTimer(60);
-    startLocalMatch();
-});
-onRoomLeft(() => {
-    updateStatus('Соперник покинул игру');
-    if (currentMatch) currentMatch.setPaused(true);
-});
+onMatchFound((data) => { roomId = data.roomId; side = data.side; updateStatus('Матч найден!'); setTimer(60); startLocalMatch(); });
+onRoomLeft(() => { updateStatus('Соперник покинул игру'); if (currentMatch) currentMatch.setPaused(true); });
 
 /* ---------- старт ---------- */
+handleOrientation();
+resizeGame();
 showMenu();

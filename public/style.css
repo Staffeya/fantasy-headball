@@ -98,25 +98,31 @@ h1 {
 /* ====== ГЛАВНОЕ: масштабирование ====== */
 /* Внешний контейнер, куда мы применяем transform: scale() из JS */
 .game-scale {
-    display: grid;
-    place-items: center;
+    position: relative;
     width: 100%;
     max-width: 1000px;
-    /* высота потом учитывается в JS через свободное место страницы */
+    /* высоту выставим из JS под доступное окно */
+    height: 400px;
+    display: block;
+    overflow: hidden;
 }
 
-/* Фиксированный слой 900x500 (базовая «логическая» сцена) */
+/* Фиксированный слой «логического» размера 900x500.
+   Мы его будем центрировать и масштабировать через transform. */
 .game-fixed {
-    position: relative;
+    position: absolute;
+    left: 50%;
+    top: 50%;
     width: 900px;
     height: 500px;
     border: 1px solid #1e2a44;
     border-radius: 16px;
     overflow: hidden;
     background: linear-gradient(#0f1730, #0b1220);
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
 }
 
-    /* Канвас — самый нижний слой */
     .game-fixed canvas {
         position: absolute;
         inset: 0;
@@ -125,19 +131,15 @@ h1 {
         z-index: 0;
     }
 
-/* HUD — гарантированно поверх канвы */
+/* HUD гарантированно поверх канвы */
 .hud {
     position: absolute;
-    background: rgba(12, 18, 32, 0.7);
+    z-index: 2;
+    background: rgba(12,18,32,.7);
     border: 1px solid #2a3a61;
     padding: 6px 10px;
     border-radius: 10px;
-    z-index: 2;
 }
-
-    .hud.small {
-        font-size: 12px;
-    }
 
     .hud.big {
         font-size: 20px;
@@ -145,32 +147,36 @@ h1 {
         letter-spacing: 1px;
     }
 
+    .hud.small {
+        font-size: 12px;
+    }
+
     .hud.center {
-        top: 8px;
         left: 50%;
         transform: translateX(-50%);
+        top: 12px;
     }
 
     .hud.right {
-        top: 8px;
-        right: 10px;
+        right: 12px;
+        top: 12px;
     }
 
 .under-score {
-    top: 40px;
+    top: 44px;
 }
 
-/* Кнопка «Меню» — ещё выше */
+/* Кнопка «Меню» — самый верхний слой */
 .side-btn {
     position: absolute;
-    left: 10px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    padding: 8px 12px;
     z-index: 3;
+    padding: 8px 12px;
 }
 
-/* Контролы снизу */
+/* Панель управления снизу экрана (вне масштабируемого слоя) */
 .controls {
     position: sticky;
     bottom: 0;
@@ -181,35 +187,6 @@ h1 {
     border-radius: 16px;
 }
 
-.ctrl {
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid #2a3a61;
-    background: #121a31;
-    color: #e8eefc;
-    min-width: 64px;
-    font-weight: 600;
-}
-
-/* Оверлей поворота */
-.rotate-overlay {
-    position: fixed;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    background: rgba(0,0,0,0.6);
-    z-index: 10;
-}
-
-.rotate-card {
-    background: #121a31;
-    border: 1px solid #2a3a61;
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-}
-
-/* Лёгкая адаптация текста на очень узких экранах (масштаб делает основную работу) */
 @media (max-width: 480px) {
     .hud.big {
         font-size: 18px;
