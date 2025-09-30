@@ -20,18 +20,25 @@ const BASE_W = 900, BASE_H = 500;
 /* ---------- масштабирование (contain) ---------- */
 function getViewportSize() { const vv = window.visualViewport; return vv ? { w: vv.width, h: vv.height } : { w: innerWidth, h: innerHeight }; }
 function resizeGame() {
-    const { w, h } = getViewportSize();
+    const vv = window.visualViewport;
+    const vw = vv ? vv.width : window.innerWidth;
+    const vh = vv ? vv.height : window.innerHeight;
+
     const controls = document.querySelector('.controls');
     const controlsH = controls ? controls.offsetHeight : 0;
 
-    const availW = Math.min(w - 8, 1200);
-    const availH = h - controlsH - 8 - 8;
+    // 🔧 фикс-запас под верхнюю панель TG (55–70px обычно). Берём 88px с запасом.
+    const topChromeReserve = 88;
+
+    const availW = Math.min(vw - 8, 1200);
+    const availH = vh - controlsH - topChromeReserve - 10;
 
     const base = Math.min(availW / BASE_W, availH / BASE_H);
-    const scale = Math.max(0.5, Math.min(base * 1.08, 1.1));
+    const scale = Math.max(0.5, Math.min(base * 1.06, 1.08));
 
     fixedLayer.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    scaleWrap.style.height = `${BASE_H * scale}px`;
+    scaleWrap.style.height = `${BASE_H * scale + topChromeReserve}px`; // место с учётом запаса сверху
+    scaleWrap.style.paddingTop = `${topChromeReserve}px`;              // визуальный отступ сверху
 }
 addEventListener('resize', resizeGame, { passive: true });
 addEventListener('orientationchange', () => setTimeout(resizeGame, 100), { passive: true });

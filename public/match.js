@@ -154,22 +154,59 @@ export function createMatch(canvas, ctx, { roomId, side, updateStatus }) {
     }
 
     function drawHUD() {
-        const text = `${scoreL} : ${scoreR}`;
-        ctx.save();
-        // счёт
-        ctx.font = 'bold 28px system-ui, -apple-system, Segoe UI, Roboto';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-        ctx.fillStyle = '#e8eefc';
-        ctx.strokeStyle = 'rgba(11,18,32,0.7)'; ctx.lineWidth = 6;
-        ctx.strokeText(text, W / 2, 8);
-        ctx.fillText(text, W / 2, 8);
+        // координаты центра
+        const cx = W / 2;
 
-        // таймер под счётом
-        const t = `${timeLeft}`;
+        // значения
+        const scoreText = `${scoreL} : ${scoreR}`;
+        const timeText = `${timeLeft}`;
+
+        // параметры
+        const scoreY = 22;   // было 8 — опустили ниже
+        const timeY = 54;   // таймер ещё ниже
+
+        // общие стили
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+
+        // фон-плашка (капсула) под счёт
+        const padX = 14, padY = 6;
+        ctx.font = 'bold 28px system-ui, -apple-system, Segoe UI, Roboto';
+        const scoreW = ctx.measureText(scoreText).width;
+        const boxW = Math.max(74, scoreW + padX * 2);
+        const boxH = 32 + padY * 2;
+
+        // капсула
+        roundRect(ctx, cx - boxW / 2, scoreY - 8, boxW, boxH, 10, 'rgba(12,18,32,0.72)', '#2a3a61');
+
+        // сам счёт
+        ctx.fillStyle = '#e8eefc';
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.lineWidth = 4;
+        ctx.strokeText(scoreText, cx, scoreY);
+        ctx.fillText(scoreText, cx, scoreY);
+
+        // таймер на маленькой плашке ниже
         ctx.font = '600 18px system-ui, -apple-system, Segoe UI, Roboto';
-        ctx.strokeText(t, W / 2, 40);
-        ctx.fillText(t, W / 2, 40);
+        const timeW = ctx.measureText(timeText).width;
+        roundRect(ctx, cx - (timeW + 20) / 2, timeY - 6, timeW + 20, 26, 8, 'rgba(12,18,32,0.72)', '#2a3a61');
+        ctx.strokeText(timeText, cx, timeY);
+        ctx.fillText(timeText, cx, timeY);
+
         ctx.restore();
+    }
+
+    // утилита для скруглённых прямоугольников
+    function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+        if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
     }
 
     requestAnimationFrame(loop);
