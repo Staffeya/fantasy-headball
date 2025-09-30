@@ -1,0 +1,21 @@
+{
+  "name": "fantasy-headball",
+  "version": "1.0.0",
+  "description": "Telegram WebApp fantasy headball 1v1 game (Node + Express + Socket.IO + Telegraf)",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server/index.js",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "socket.io": "^4.8.1",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

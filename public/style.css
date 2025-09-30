@@ -1,0 +1,111 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  background: #0b1220;
+  color: #e8eefc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#ui { width: 100%; max-width: 1100px; padding: 16px; }
+
+.hidden { display: none !important; }
+
+.card {
+  background: rgba(17, 27, 45, 0.9);
+  border: 1px solid #1e2a44;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+h1 { margin-top: 0; letter-spacing: 0.5px; }
+
+.btn-col { display: flex; flex-direction: column; gap: 10px; }
+
+.btn {
+  background: #1a2440;
+  color: #e8eefc;
+  border: 1px solid #2a3a61;
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .05s ease, background .2s ease, border-color .2s;
+}
+.btn:hover { background: #223259; }
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn.primary { background: #2b5cff; border-color: #3f6bff; }
+.btn.ghost { background: transparent; border-color: #2a3a61; }
+.btn.small { padding: 8px 12px; font-size: 14px; }
+
+.top-left { position: absolute; top: 12px; left: 12px; }
+
+#scene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+canvas {
+  background: linear-gradient(#0f1730, #0b1220);
+  border: 1px solid #1e2a44;
+  border-radius: 16px;
+  display: block;
+  margin: 0 auto;
+  width: 900px;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 900 / 500;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+.ctrl {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #2a3a61;
+  background: #121a31;
+  color: #e8eefc;
+  min-width: 64px;
+  font-weight: 600;
+}
+
+.hud {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(12, 18, 32, 0.7);
+  border: 1px solid #2a3a61;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+.hud.small { font-size: 12px; top: 50px; }
+
+.rotate-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 10;
+}
+.rotate-card {
+  background: #121a31;
+  border: 1px solid #2a3a61;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+}
