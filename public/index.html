@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
-  <title>Fantasy Headball</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Fantasy Headball</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
     <div id="ui">
@@ -22,15 +22,20 @@
         <!-- Game Scene -->
         <div id="scene" class="hidden">
             <canvas id="game" width="900" height="500"></canvas>
+
+            <!-- HUD -->
+            <button id="backToMenu" class="btn ghost side-btn">Меню</button>
+            <div id="score" class="hud center big">0 : 0</div>
+            <div id="timer" class="hud center small">60</div>
+            <div id="status" class="hud right small"></div>
+
+            <!-- Controls -->
             <div class="controls">
                 <button class="ctrl" data-key="ArrowLeft">←</button>
                 <button class="ctrl" data-key="ArrowRight">→</button>
                 <button class="ctrl" data-key="Space">Jump</button>
                 <button class="ctrl" data-key="KeyX">Kick</button>
             </div>
-            <button id="backToMenu" class="btn ghost top-left">Меню</button>
-            <div id="score" class="hud">0 : 0</div>
-            <div id="status" class="hud small">В очереди...</div>
         </div>
 
         <!-- Orientation Overlay -->
