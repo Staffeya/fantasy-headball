@@ -4,8 +4,8 @@ import { createMatch } from './match.js';
 const menu = document.getElementById('menu');
 const scene = document.getElementById('scene');
 const backBtn = document.getElementById('backToMenu');
-const rotateOverlay = document.getElementById('rotate');
 const statusEl = document.getElementById('status');
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -15,10 +15,30 @@ const fixedLayer = document.querySelector('.game-fixed');
 let currentMatch = null, roomId = null, side = null;
 let timerId = null, timeLeft = 60;
 
-const BASE_W = 900, BASE_H = 500;
+// Базы для двух ориентаций
+const LANDSCAPE = { w: 900, h: 500 };
+const PORTRAIT = { w: 500, h: 900 };
+let BASE = LANDSCAPE;
 
-/* ---------- масштабирование (contain) ---------- */
-function getViewportSize() { const vv = window.visualViewport; return vv ? { w: vv.width, h: vv.height } : { w: innerWidth, h: innerHeight }; }
+/* -------- РЕЖИМ/ОРИЕНТАЦИЯ -------- */
+function isPortrait() {
+    const vv = window.visualViewport;
+    const w = vv ? vv.width : innerWidth;
+    const h = vv ? vv.height : innerHeight;
+    return h > w;
+}
+
+function applyBaseSize() {
+    BASE = isPortrait() ? PORTRAIT : LANDSCAPE;
+    // обновляем реальные размеры канвы
+    canvas.width = BASE.w;
+    canvas.height = BASE.h;
+    // прокидываем размеры в CSS (для контейнера)
+    fixedLayer.style.setProperty('--gw', BASE.w + 'px');
+    fixedLayer.style.setProperty('--gh', BASE.h + 'px');
+}
+
+/* -------- МАСШТАБИРОВАНИЕ -------- */
 function resizeGame() {
     const vv = window.visualViewport;
     const vw = vv ? vv.width : window.innerWidth;
@@ -27,38 +47,29 @@ function resizeGame() {
     const controls = document.querySelector('.controls');
     const controlsH = controls ? controls.offsetHeight : 0;
 
-    // 🔧 фикс-запас под верхнюю панель TG (55–70px обычно). Берём 88px с запасом.
-    const topChromeReserve = 88;
+    // запас сверху под шапку Telegram (универсально для обоих режимов)
+    const topReserve = 88;
 
     const availW = Math.min(vw - 8, 1200);
-    const availH = vh - controlsH - topChromeReserve - 10;
+    const availH = vh - controlsH - topReserve - 10;
 
-    const base = Math.min(availW / BASE_W, availH / BASE_H);
-    const scale = Math.max(0.5, Math.min(base * 1.06, 1.08));
+    const baseScale = Math.min(availW / BASE.w, availH / BASE.h);
+    const scale = Math.max(0.5, Math.min(baseScale * 1.04, 1.12)); // чутка крупнее
 
     fixedLayer.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    scaleWrap.style.height = `${BASE_H * scale + topChromeReserve}px`; // место с учётом запаса сверху
-    scaleWrap.style.paddingTop = `${topChromeReserve}px`;              // визуальный отступ сверху
+    scaleWrap.style.height = `${(BASE.h * scale) + topReserve}px`;
+    scaleWrap.style.paddingTop = `${topReserve}px`;
 }
-addEventListener('resize', resizeGame, { passive: true });
-addEventListener('orientationchange', () => setTimeout(resizeGame, 100), { passive: true });
+
+addEventListener('resize', () => { applyBaseSize(); resizeGame(); }, { passive: true });
+addEventListener('orientationchange', () => setTimeout(() => { applyBaseSize(); resizeGame(); }, 100), { passive: true });
 if (window.visualViewport) {
-    visualViewport.addEventListener('resize', resizeGame);
-    visualViewport.addEventListener('scroll', resizeGame);
+    visualViewport.addEventListener('resize', () => { applyBaseSize(); resizeGame(); });
+    visualViewport.addEventListener('scroll', () => { applyBaseSize(); resizeGame(); });
 }
 
-/* ---------- ориентация ---------- */
-function handleOrientation() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    rotateOverlay.classList.toggle('hidden', !isPortrait);
-}
-addEventListener('resize', handleOrientation);
-addEventListener('orientationchange', handleOrientation);
-
-/* ---------- статус ---------- */
+/* -------- Статус/таймер -------- */
 function updateStatus(t) { statusEl.textContent = t || ''; statusEl.style.display = t ? 'block' : 'none'; }
-
-/* ---------- таймер ---------- */
 function setTimer(v) { timeLeft = v; if (currentMatch) currentMatch.setTimeLeft(timeLeft); }
 function startTimer() {
     stopTimer();
@@ -76,7 +87,7 @@ function startTimer() {
 }
 function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
-/* ---------- сцены ---------- */
+/* -------- Сцены -------- */
 function showMenu() {
     scene.classList.add('hidden');
     menu.classList.remove('hidden');
@@ -88,13 +99,14 @@ function showMatch() {
     scene.classList.remove('hidden');
     setTimer(60);
     updateStatus('В очереди...');
+    applyBaseSize();
     resizeGame();
     joinQueue();
 }
 
 backBtn.addEventListener('click', showMenu);
 
-/* ---------- сокеты ---------- */
+/* -------- Сокеты -------- */
 onMatchFound((data) => {
     roomId = data.roomId; side = data.side;
     updateStatus('Матч найден!');
@@ -105,12 +117,12 @@ onMatchFound((data) => {
 });
 onRoomLeft(() => { updateStatus('Соперник покинул игру'); if (currentMatch) currentMatch.setPaused(true); });
 
-/* ---------- старт ---------- */
-handleOrientation();
+/* -------- Старт -------- */
+applyBaseSize();
 resizeGame();
 showMenu();
 
-// меню кнопки в index.html остаются без изменений
+/* меню из главного экрана */
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;

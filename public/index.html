@@ -21,30 +21,22 @@
 
         <!-- GAME -->
         <div id="scene" class="hidden">
-            <!-- масштабируемый контейнер -->
             <div class="game-scale">
-                <!-- фиксированный слой 900x500; ВСЁ внутри — масштабир. единообразно -->
+                <!-- размеры задаём через CSS-переменные, которые меняет JS -->
                 <div class="game-fixed">
                     <canvas id="game" width="900" height="500"></canvas>
-
-                    <!-- HUD (всегда поверх канвы) -->
                     <button id="backToMenu" class="btn ghost side-btn">Меню</button>
                     <div id="status" class="hud right small"></div>
                 </div>
             </div>
 
-            <!-- Контролы снизу -->
+            <!-- Контролы -->
             <div class="controls">
                 <button class="ctrl" data-key="ArrowLeft">←</button>
                 <button class="ctrl" data-key="ArrowRight">→</button>
                 <button class="ctrl" data-key="Space">Jump</button>
                 <button class="ctrl" data-key="KeyX">Kick</button>
             </div>
-        </div>
-
-        <!-- Оверлей ориентации -->
-        <div id="rotate" class="rotate-overlay hidden">
-            <div class="rotate-card">📱 Поверните устройство в альбомную ориентацию</div>
         </div>
     </div>
 

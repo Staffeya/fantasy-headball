@@ -80,11 +80,6 @@ h1 {
         border-color: #2a3a61;
     }
 
-    .btn.small {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-
 /* SCENE */
 #scene {
     position: relative;
@@ -95,26 +90,26 @@ h1 {
     min-height: calc(100vh - 24px);
 }
 
-/* ====== ГЛАВНОЕ: масштабирование ====== */
-/* Внешний контейнер, куда мы применяем transform: scale() из JS */
+/* Контейнер, в котором центрируем и масштабируем сцену */
 .game-scale {
     position: relative;
     width: 100%;
-    max-width: 1000px;
-    /* высоту выставим из JS под доступное окно */
-    height: 400px;
+    max-width: 1200px;
     display: block;
     overflow: hidden;
+    /* высоту задаёт JS, чтобы учитывать панель контролов */
+    height: 400px;
 }
 
-/* Фиксированный слой «логического» размера 900x500.
-   Мы его будем центрировать и масштабировать через transform. */
+/* Размеры слоя задаём переменными --gw/--gh (меняются в JS при смене ориентации) */
 .game-fixed {
+    --gw: 900px;
+    --gh: 500px;
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 900px;
-    height: 500px;
+    width: var(--gw);
+    height: var(--gh);
     border: 1px solid #1e2a44;
     border-radius: 16px;
     overflow: hidden;
@@ -126,12 +121,12 @@ h1 {
     .game-fixed canvas {
         position: absolute;
         inset: 0;
-        width: 900px;
-        height: 500px;
+        width: var(--gw);
+        height: var(--gh);
         z-index: 0;
     }
 
-/* HUD гарантированно поверх канвы */
+/* HUD поверх канвы */
 .hud {
     position: absolute;
     z-index: 2;
@@ -139,58 +134,41 @@ h1 {
     border: 1px solid #2a3a61;
     padding: 6px 12px;
     border-radius: 10px;
+    font-size: 13px;
 }
 
-    .hud.big {
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: 1px;
-    }
-
-    .hud.small {
-        font-size: 13px;
-    }
-
-    .hud.center {
-        left: 50%;
-        transform: translateX(-50%);
+    .hud.right {
+        right: 12px;
         top: 12px;
     }
-/* счёт */
-.under-score {
-    top: 46px;
-}
-/* таймер */
-.hud.right {
-    right: 12px;
-    top: 12px;
-}
 
-/* Кнопка «Меню» — в левом верхнем углу */
+/* Меню в левом верхнем углу сцены */
 .side-btn {
     position: absolute;
     left: 12px;
-    top: 16px; /* было 12/центр — теперь фиксированно сверху */
+    top: 12px;
     transform: none;
     z-index: 3;
     padding: 8px 12px;
 }
 
-/* Панель управления снизу экрана (вне масштабируемого слоя) */
+/* Контролы снизу */
 .controls {
+    position: sticky;
+    bottom: 0;
+    display: flex;
     gap: 10px;
     padding: 12px 10px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(11,18,32,0) 0%, rgba(11,18,32,.6) 40%, rgba(11,18,32,1) 100%);
+    border-radius: 16px;
 }
 
 .ctrl {
     min-width: 70px;
     padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #2a3a61;
+    background: #121a31;
+    color: #e8eefc;
     font-weight: 700;
-}
-
-
-@media (max-width: 480px) {
-    .hud.big {
-        font-size: 18px;
-    }
 }
