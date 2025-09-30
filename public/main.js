@@ -186,10 +186,23 @@ document.addEventListener('visibilitychange', () => {
         updateStatus('Пауза');
     } else {
         // не автопродолжаем матч — пользователь решит сам: Реванш/Меню или продолжать (если таймер ещё был)
-        if (timeLeft > 0) {
-            startTimer();
+        if (timeLeft <= 0) {
+            setTimer(0);
+            stopTimer();
+
+            let verdict = 'Ничья';
+            if (currentMatch && currentMatch.getScore) {
+                const { left, right } = currentMatch.getScore();
+                // считаем относительно ТВОЕЙ стороны
+                const you = side === 'left' ? left : right;
+                const opp = side === 'left' ? right : left;
+                verdict = you > opp ? 'Победа!' : opp > you ? 'Поражение' : 'Ничья';
+            }
+
+            showEndOverlay(verdict);
+            if (currentMatch && currentMatch.setPaused) currentMatch.setPaused(true);
             updateStatus('');
-            if (currentMatch && currentMatch.setPaused) currentMatch.setPaused(false);
+            return;
         }
     }
 });
