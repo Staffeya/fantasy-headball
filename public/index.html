@@ -21,15 +21,18 @@
 
         <!-- Game Scene -->
         <div id="scene" class="hidden">
-            <canvas id="game" width="900" height="500"></canvas>
+            <!-- ВАЖНО: обёртка, к которой «прикреплены» HUD и кнопка -->
+            <div class="game-wrap">
+                <canvas id="game" width="900" height="500"></canvas>
 
-            <!-- HUD -->
-            <button id="backToMenu" class="btn ghost side-btn">Меню</button>
-            <div id="score" class="hud center big">0 : 0</div>
-            <div id="timer" class="hud center small">60</div>
-            <div id="status" class="hud right small"></div>
+                <!-- HUD внутри обёртки -->
+                <button id="backToMenu" class="btn ghost side-btn">Меню</button>
+                <div id="score" class="hud center big">0 : 0</div>
+                <div id="timer" class="hud center small under-score">60</div>
+                <div id="status" class="hud right small"></div>
+            </div>
 
-            <!-- Controls -->
+            <!-- Кнопки управления снизу, вне обёртки -->
             <div class="controls">
                 <button class="ctrl" data-key="ArrowLeft">←</button>
                 <button class="ctrl" data-key="ArrowRight">→</button>
