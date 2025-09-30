@@ -25,8 +25,21 @@
                 <!-- размеры задаём через CSS-переменные, которые меняет JS -->
                 <div class="game-fixed">
                     <canvas id="game" width="900" height="500"></canvas>
+
+                    <!-- Только то, что не зависит от масштаба канвы -->
                     <button id="backToMenu" class="btn ghost side-btn">Меню</button>
                     <div id="status" class="hud right small"></div>
+
+                    <!-- Оверлей конца матча (победа/ничья) -->
+                    <div id="endOverlay" class="overlay hidden">
+                        <div class="panel">
+                            <div id="endText" class="title">Итог</div>
+                            <div class="row">
+                                <button id="btnRematch" class="btn primary">Реванш</button>
+                                <button id="btnToMenu" class="btn">В меню</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

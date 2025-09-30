@@ -12,6 +12,12 @@ const ctx = canvas.getContext('2d');
 const scaleWrap = document.querySelector('.game-scale');
 const fixedLayer = document.querySelector('.game-fixed');
 
+/* --- overlay элементов конца матча --- */
+const endOverlay = document.getElementById('endOverlay');
+const endText = document.getElementById('endText');
+const btnRematch = document.getElementById('btnRematch');
+const btnToMenu = document.getElementById('btnToMenu');
+
 let currentMatch = null, roomId = null, side = null;
 let timerId = null, timeLeft = 60;
 
@@ -30,7 +36,7 @@ function isPortrait() {
 
 function applyBaseSize() {
     BASE = isPortrait() ? PORTRAIT : LANDSCAPE;
-    // обновляем реальные размеры канвы
+    // реальные размеры канвы
     canvas.width = BASE.w;
     canvas.height = BASE.h;
     // прокидываем размеры в CSS (для контейнера)
@@ -69,8 +75,16 @@ if (window.visualViewport) {
 }
 
 /* -------- Статус/таймер -------- */
-function updateStatus(t) { statusEl.textContent = t || ''; statusEl.style.display = t ? 'block' : 'none'; }
-function setTimer(v) { timeLeft = v; if (currentMatch) currentMatch.setTimeLeft(timeLeft); }
+function updateStatus(t) {
+    statusEl.textContent = t || '';
+    statusEl.style.display = t ? 'block' : 'none';
+}
+
+function setTimer(v) {
+    timeLeft = v;
+    if (currentMatch && currentMatch.setTimeLeft) currentMatch.setTimeLeft(timeLeft);
+}
+
 function startTimer() {
     stopTimer();
     timerId = setInterval(() => {
@@ -78,22 +92,48 @@ function startTimer() {
         if (timeLeft <= 0) {
             setTimer(0);
             stopTimer();
-            updateStatus('⏱ Время!');
-            if (currentMatch) currentMatch.setPaused(true);
+            // показываем итог
+            let verdict = 'Ничья';
+            if (currentMatch && currentMatch.getScore) {
+                const { left, right } = currentMatch.getScore();
+                verdict = left > right ? 'Победа ЛЕВЫХ' : right > left ? 'Победа ПРАВЫХ' : 'Ничья';
+            }
+            showEndOverlay(verdict);
+            if (currentMatch && currentMatch.setPaused) currentMatch.setPaused(true);
+            updateStatus('');
             return;
         }
-        if (currentMatch) currentMatch.setTimeLeft(timeLeft);
+        if (currentMatch && currentMatch.setTimeLeft) currentMatch.setTimeLeft(timeLeft);
     }, 1000);
 }
-function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+
+function stopTimer() {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+}
+
+/* -------- Overlay конца матча -------- */
+function showEndOverlay(title) {
+    endText.textContent = title || 'Итог';
+    endOverlay.classList.remove('hidden');
+    btnRematch.disabled = false;
+    btnToMenu.disabled = false;
+}
+function hideEndOverlay() {
+    endOverlay.classList.add('hidden');
+}
 
 /* -------- Сцены -------- */
 function showMenu() {
     scene.classList.add('hidden');
     menu.classList.remove('hidden');
-    if (currentMatch) { currentMatch.destroy(); currentMatch = null; }
-    leaveQueue(); stopTimer(); setTimer(60); updateStatus('');
+    if (currentMatch && currentMatch.destroy) { currentMatch.destroy(); currentMatch = null; }
+    leaveQueue();
+    stopTimer();
+    setTimer(60);
+    updateStatus('');
+    hideEndOverlay();
 }
+
 function showMatch() {
     menu.classList.add('hidden');
     scene.classList.remove('hidden');
@@ -101,10 +141,25 @@ function showMatch() {
     updateStatus('В очереди...');
     applyBaseSize();
     resizeGame();
+    hideEndOverlay();
     joinQueue();
 }
 
+/* кнопка «Меню» в сцене */
 backBtn.addEventListener('click', showMenu);
+
+/* overlay кнопки */
+btnRematch.addEventListener('click', () => {
+    // переиграть: просто вернуться в очередь
+    btnRematch.disabled = true;
+    btnToMenu.disabled = true;
+    showMatch();
+});
+btnToMenu.addEventListener('click', () => {
+    btnRematch.disabled = true;
+    btnToMenu.disabled = true;
+    showMenu();
+});
 
 /* -------- Сокеты -------- */
 onMatchFound((data) => {
@@ -112,10 +167,32 @@ onMatchFound((data) => {
     updateStatus('Матч найден!');
     setTimer(60);
     currentMatch = createMatch(canvas, ctx, { roomId, side, updateStatus });
-    currentMatch.setTimeLeft(timeLeft);
+    if (currentMatch.setTimeLeft) currentMatch.setTimeLeft(timeLeft);
     startTimer();
+    hideEndOverlay();
 });
-onRoomLeft(() => { updateStatus('Соперник покинул игру'); if (currentMatch) currentMatch.setPaused(true); });
+
+onRoomLeft(() => {
+    updateStatus('Соперник покинул игру');
+    if (currentMatch && currentMatch.setPaused) currentMatch.setPaused(true);
+    showEndOverlay('Соперник вышел');
+});
+
+/* -------- Пауза при сворачивании -------- */
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        if (currentMatch && currentMatch.setPaused) currentMatch.setPaused(true);
+        stopTimer();
+        updateStatus('Пауза');
+    } else {
+        // не автопродолжаем матч — пользователь решит сам: Реванш/Меню или продолжать (если таймер ещё был)
+        if (timeLeft > 0) {
+            startTimer();
+            updateStatus('');
+            if (currentMatch && currentMatch.setPaused) currentMatch.setPaused(false);
+        }
+    }
+});
 
 /* -------- Старт -------- */
 applyBaseSize();
