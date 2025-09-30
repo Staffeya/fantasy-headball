@@ -7,43 +7,41 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="ui">
-    <!-- Main Menu -->
-    <div id="menu" class="card">
-      <h1>⚔️ Fantasy Headball</h1>
-      <div class="btn-col">
-        <button data-action="play" class="btn primary">Играть</button>
-        <button data-action="invite" class="btn">Пригласить друга</button>
-        <button data-action="wardrobe" class="btn">Гардероб</button>
-        <button data-action="shop" class="btn">Магазин</button>
-      </div>
+    <div id="ui">
+        <!-- Main Menu -->
+        <div id="menu" class="card">
+            <h1>⚔️ Fantasy Headball</h1>
+            <div class="btn-col">
+                <button data-action="play" class="btn primary">Играть</button>
+                <button data-action="invite" class="btn">Пригласить друга</button>
+                <button data-action="wardrobe" class="btn">Гардероб</button>
+                <button data-action="shop" class="btn">Магазин</button>
+            </div>
+        </div>
+
+        <!-- Game Scene -->
+        <div id="scene" class="hidden">
+            <canvas id="game" width="900" height="500"></canvas>
+            <div class="controls">
+                <button class="ctrl" data-key="ArrowLeft">←</button>
+                <button class="ctrl" data-key="ArrowRight">→</button>
+                <button class="ctrl" data-key="Space">Jump</button>
+                <button class="ctrl" data-key="KeyX">Kick</button>
+            </div>
+            <button id="backToMenu" class="btn ghost top-left">Меню</button>
+            <div id="score" class="hud">0 : 0</div>
+            <div id="status" class="hud small">В очереди...</div>
+        </div>
+
+        <!-- Orientation Overlay -->
+        <div id="rotate" class="rotate-overlay hidden">
+            <div class="rotate-card">
+                <div>📱 Поверните устройство в альбомную ориентацию</div>
+            </div>
+        </div>
     </div>
 
-    <!-- Game Scene -->
-    <div id="scene" class="hidden">
-      <canvas id="game" width="900" height="500"></canvas>
-      <div class="controls">
-        <button class="ctrl" data-key="ArrowLeft">←</button>
-        <button class="ctrl" data-key="ArrowRight">→</button>
-        <button class="ctrl" data-key="Space">Jump</button>
-        <button class="ctrl" data-key="KeyX">Kick</button>
-      </div>
-      <button id="backToMenu" class="btn ghost top-left">Меню</button>
-      <div id="score" class="hud">0 : 0</div>
-      <div id="status" class="hud small">В очереди...</div>
-    </div>
-
-    <!-- Orientation Overlay -->
-    <div id="rotate" class="rotate-overlay hidden">
-      <div class="rotate-card">
-        <div>📱 Поверните устройство в альбомную ориентацию</div>
-      </div>
-    </div>
-  </div>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="net.js"></script>
-  <script src="match.js"></script>
-  <script src="main.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
