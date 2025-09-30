@@ -66,7 +66,7 @@ export function createMatch(canvas, ctx, { roomId, side, scoreEl, updateStatus }
     function player(x, y, side) { return { x, y, r: 24, vx: 0, vy: 0, onGround: true, side }; }
     function entity(x, y, r) { return { x, y, r, vx: 0, vy: 0 }; }
 
-    const GRAV = 0.8, FRICTION = 0.92, MOVE = 2.3, JUMP = -12, KICK_POWER = 9;
+    const GRAV = 0.6, FRICTION = 0.90, MOVE = 1.6, JUMP = -9.5, KICK_POWER = 6;
 
     let lastTime = performance.now();
     function loop(t) {

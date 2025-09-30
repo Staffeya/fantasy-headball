@@ -27,33 +27,22 @@ function getViewportSize() {
 }
 
 function resizeGame() {
-    const { w, h } = getViewportSize();
+    const vv = window.visualViewport;
+    const vw = vv ? vv.width : window.innerWidth;
+    const vh = vv ? vv.height : window.innerHeight;
 
-    // высота панели контролов
     const controls = document.querySelector('.controls');
     const controlsH = controls ? controls.offsetHeight : 0;
 
-    // отступы сверху/снизу и safe-area
-    const topPad = 8;
-    const bottomPad = 8 + (window.safeAreaInsetBottom || 0);
+    const availW = Math.min(vw - 8, 1200);              // можно шире
+    const availH = vh - controlsH - 8 - 8;              // больше места по высоте
 
-    // доступная область под игру
-    const availW = Math.min(w - 12, 1000);
-    const availH = h - controlsH - topPad - bottomPad - 12;
+    // базовый scale + лёгкое увеличение (до 10%) чтобы занять экран
+    const baseScale = Math.min(availW / BASE_W, availH / BASE_H);
+    const scale = Math.max(0.5, Math.min(baseScale * 1.08, 1.1)); // 0.5..1.1
 
-    // коэффициент вписывания (contain)
-    const scale = Math.max(0.4, Math.min(availW / BASE_W, availH / BASE_H));
-
-    // применяем: центрируем фиксированный слой и масштабируем
     fixedLayer.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    scaleWrap.style.height = `${BASE_H * scale}px`; // чтобы место под сцену было корректное
-}
-
-window.addEventListener('resize', resizeGame, { passive: true });
-window.addEventListener('orientationchange', () => setTimeout(resizeGame, 100), { passive: true });
-if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', resizeGame);
-    window.visualViewport.addEventListener('scroll', resizeGame); // когда Telegram прячет/показывает бар
+    scaleWrap.style.height = `${BASE_H * scale}px`;
 }
 
 /* ---------- ориентация (просим альбомную) ---------- */
